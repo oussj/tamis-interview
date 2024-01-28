@@ -1,9 +1,10 @@
 from flask import Flask
 from exercise.pool import DevicePool
 from flask import Flask, request, jsonify
-from exercise.errors import ErrorDeviceAlreadyExists, ErrorDeviceNotFound
+from exercise.errors import ErrorDeviceAlreadyExists, ErrorDeviceNotFound, ErrorJobAlreadyExists
 from exercise.device import Device
 from exercise.queue import PriorityQueue
+from exercise.job import Job
 import threading
 
 # Flask class implementation from https://stackoverflow.com/questions/40460846/using-flask-inside-class
@@ -35,6 +36,7 @@ class API:
     def add_endpoints(self):
         self.app.add_url_rule('/add_device', 'add_device', EndpointAction(self.add_device_handler), methods=['POST'])
         self.app.add_url_rule('/remove_device', 'remove_device', EndpointAction(self.remove_device_handler), methods=['POST'])
+        self.app.add_url_rule('/add_job', 'add_job', EndpointAction(self.add_job_handler), methods=['POST'])
         
     def add_device_handler(self):
         data = request.json
@@ -51,6 +53,22 @@ class API:
             return jsonify({"error": "Invalid data"}), 400
         except ErrorDeviceAlreadyExists:
             return jsonify({"error": "Device already exists"}), 400
+        
+    def add_job_handler(self):
+        data = request.json
+        job_id = data.get('id')
+        job_user_id = data.get('user_id')
+        job_device_type = data.get('device_type')
+        job_program_id = data.get('program_id')
+        
+        try:
+            if job_id and job_user_id and job_device_type and job_program_id is not None:
+                job = Job(job_id, job_user_id, job_device_type, job_program_id)
+                self.job_queue.push(job, job.priority)
+                return jsonify({"message": f"Job {job_id} added."}), 200
+            return jsonify({"error": "Invalid data"}), 400
+        except ErrorJobAlreadyExists:
+            return jsonify({"error": "Job already exists"}), 400
 
     def remove_device_handler(self):
         data = request.json

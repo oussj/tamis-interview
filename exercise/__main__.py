@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     # Running the api should not block. You should run it asynchronously
     # using threading, asyncio, or any other library you see fit.
-    api = API(pool)
+    api = API(pool, queue)
     api.run_async()
 
     # TODO:
