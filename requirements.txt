@@ -1,0 +1,5 @@
+-e git+ssh://git@github.com/oussj/tamis-interview.git@169bd7f31b26fe709ebfb804a9b42867665476e1#egg=exercise
+iniconfig==2.0.0
+packaging==23.2
+pluggy==1.4.0
+pytest==8.0.0
