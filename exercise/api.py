@@ -44,10 +44,23 @@ class API:
         except ErrorDeviceAlreadyExists:
             return jsonify({"error": "Device already exists"}), 400
 
+    def remove_device_handler(self):
+        data = request.json
+        device_id = data.get('device_id')
+
+        try:
+            if device_id:
+                self.device_pool.remove(device_id)
+                return jsonify({"message": f"Device {device_id} removed."}), 200
+            return jsonify({"error": "Invalid device ID"}), 400
+        except ErrorDeviceNotFound:
+            return jsonify({"error": "Device not found"}), 404
+
     
     def add_endpoint(self, endpoint=None, endpoint_name=None, handler=None, methods=['GET']):
         self.app.add_url_rule(endpoint, endpoint_name, EndpointAction(handler), methods=methods)
 
     def run(self):
         self.add_endpoint(endpoint='/add_device', endpoint_name='add_device', handler=EndpointAction(self.add_device_handler), methods=['POST'])
+        self.add_endpoint(endpoint='/remove_device', endpoint_name='remove_device', handler=EndpointAction(self.remove_device_handler), methods=['POST'])
         self.app.run()
