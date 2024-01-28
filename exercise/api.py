@@ -3,8 +3,8 @@ from exercise.pool import DevicePool
 from flask import Flask, request, jsonify
 from exercise.errors import ErrorDeviceAlreadyExists, ErrorDeviceNotFound
 from exercise.device import Device
+from exercise.queue import PriorityQueue
 import threading
-import asyncio
 
 # Flask class implementation from https://stackoverflow.com/questions/40460846/using-flask-inside-class
 class EndpointAction(object):
@@ -23,9 +23,10 @@ class API:
     """
     app = None
     
-    def __init__(self, device_pool: DevicePool):
+    def __init__(self, device_pool: DevicePool, job_queue: PriorityQueue):
         self.app = Flask("api")
         self.device_pool = device_pool
+        self.job_queue = job_queue
         self.add_endpoints()
 
     def add_endpoint(self, endpoint=None, endpoint_name=None, handler=None, methods=['GET']):
@@ -37,15 +38,14 @@ class API:
         
     def add_device_handler(self):
         data = request.json
-        device_id = data.get('device_id')
-        device_type = data.get('device_type')
-        device_address = data.get('device_address')
-        device_size = data.get('device_size')
-        device_state = data.get('device_state')
+        device_id = data.get('id')
+        device_type = data.get('type')
+        device_address = data.get('address')
+        device_size = data.get('size')
 
         try:
             if device_id and device_type and device_size is not None:
-                device = Device(device_id, device_address, device_type, device_size, device_state)
+                device = Device(device_id, device_address, device_type, device_size)
                 self.device_pool.add(device)
                 return jsonify({"message": f"Device {device_id} added."}), 200
             return jsonify({"error": "Invalid data"}), 400
@@ -54,7 +54,7 @@ class API:
 
     def remove_device_handler(self):
         data = request.json
-        device_id = data.get('device_id')
+        device_id = data.get('id')
 
         try:
             if device_id:
