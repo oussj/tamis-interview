@@ -8,3 +8,7 @@ class ErrorDeviceAlreadyExists(CoreError):
 
 class ErrorDeviceNotFound(CoreError):
     pass
+
+class ErrorJobAlreadyExists(CoreError):
+    pass
+

@@ -16,6 +16,5 @@ if __name__ == "__main__":
     api = API(pool, queue)
     api.run_async()
 
-    # TODO:
-    worker = Worker()
+    worker = Worker(pool, queue)
     worker.run()

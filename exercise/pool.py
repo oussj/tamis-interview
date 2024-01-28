@@ -1,6 +1,6 @@
 from exercise.errors import ErrorDeviceAlreadyExists, ErrorDeviceNotFound
 from exercise.device import Device
-from typing import Dict
+from typing import Dict, List
 
 
 class DevicePool:
@@ -27,5 +27,11 @@ class DevicePool:
 
         self.devices[device.id] = device
 
-    def list(self):
+    def list(self) -> List[Device]:
         return [d for d in self.devices.values()]
+    
+    def get_non_busy_device(self, device_type: str) -> Device:
+        for device in self.list():
+            if device.type == device_type and device.state is None:
+                return device
+        return None

@@ -21,6 +21,12 @@ class Device:
     def send(self, instructions: Any):
         call_device(self.id)
         return random.getrandbits(self.size)
+    
+    def up(self):
+        self.state = DeviceState.UP
+        
+    def down(self):
+        self.state = None
 
 
 # The following code is here to mock calls to the devices
@@ -33,3 +39,4 @@ def call_device(id: str):
     device_calls[id] += 1
     time.sleep(2 * device_calls[id])
     device_calls[id] -= 1
+    return random.getrandbits(10)
