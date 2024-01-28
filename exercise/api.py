@@ -5,6 +5,7 @@ from exercise.errors import ErrorDeviceAlreadyExists, ErrorDeviceNotFound
 from exercise.device import Device
 import threading
 import asyncio
+import time
 
 # Flask class implementation from https://stackoverflow.com/questions/40460846/using-flask-inside-class
 class EndpointAction(object):
@@ -34,7 +35,8 @@ class API:
     def add_endpoints(self):
         self.app.add_url_rule('/add_device', 'add_device', EndpointAction(self.add_device_handler), methods=['POST'])
         self.app.add_url_rule('/remove_device', 'remove_device', EndpointAction(self.remove_device_handler), methods=['POST'])
-        
+        self.app.add_url_rule('/long_task', 'long_task', EndpointAction(self.long_running_task_handler), methods=['GET'])
+
     def add_device_handler(self):
         data = request.json
         device_id = data.get('device_id')
@@ -63,6 +65,10 @@ class API:
             return jsonify({"error": "Invalid device ID"}), 400
         except ErrorDeviceNotFound:
             return jsonify({"error": "Device not found"}), 404
+
+    def long_running_task_handler(self):
+        time.sleep(10)  # Simulate a long-running task
+        return jsonify({"message": "Long-running task completed."}), 200
 
     def run(self):
         self.app.run()
