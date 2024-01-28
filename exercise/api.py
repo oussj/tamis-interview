@@ -1,9 +1,10 @@
 from flask import Flask
 from exercise.pool import DevicePool
 from flask import Flask, request, jsonify
-import threading
 from exercise.errors import ErrorDeviceAlreadyExists, ErrorDeviceNotFound
 from exercise.device import Device
+import threading
+import asyncio
 
 # Flask class implementation from https://stackoverflow.com/questions/40460846/using-flask-inside-class
 class EndpointAction(object):
@@ -25,7 +26,14 @@ class API:
     def __init__(self, device_pool: DevicePool):
         self.app = Flask("api")
         self.device_pool = device_pool
+        self.add_endpoints()
 
+    def add_endpoint(self, endpoint=None, endpoint_name=None, handler=None, methods=['GET']):
+        self.app.add_url_rule(endpoint, endpoint_name, EndpointAction(handler), methods=methods)
+
+    def add_endpoints(self):
+        self.app.add_url_rule('/add_device', 'add_device', EndpointAction(self.add_device_handler), methods=['POST'])
+        self.app.add_url_rule('/remove_device', 'remove_device', EndpointAction(self.remove_device_handler), methods=['POST'])
         
     def add_device_handler(self):
         data = request.json
@@ -56,11 +64,10 @@ class API:
         except ErrorDeviceNotFound:
             return jsonify({"error": "Device not found"}), 404
 
-    
-    def add_endpoint(self, endpoint=None, endpoint_name=None, handler=None, methods=['GET']):
-        self.app.add_url_rule(endpoint, endpoint_name, EndpointAction(handler), methods=methods)
-
     def run(self):
-        self.add_endpoint(endpoint='/add_device', endpoint_name='add_device', handler=EndpointAction(self.add_device_handler), methods=['POST'])
-        self.add_endpoint(endpoint='/remove_device', endpoint_name='remove_device', handler=EndpointAction(self.remove_device_handler), methods=['POST'])
         self.app.run()
+        
+    def run_async(self):
+        """Run the Flask app in a separate thread."""
+        threading.Thread(target=self.app.run, kwargs={'use_reloader': False}).start()
+
