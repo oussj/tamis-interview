@@ -34,9 +34,9 @@ class API:
         self.app.add_url_rule(endpoint, endpoint_name, EndpointAction(handler), methods=methods)
 
     def add_endpoints(self):
-        self.app.add_url_rule('/add_device', 'add_device', EndpointAction(self.add_device_handler), methods=['POST'])
-        self.app.add_url_rule('/remove_device', 'remove_device', EndpointAction(self.remove_device_handler), methods=['POST'])
-        self.app.add_url_rule('/add_job', 'add_job', EndpointAction(self.add_job_handler), methods=['POST'])
+        self.app.add_url_rule('/devices', 'add_device', EndpointAction(self.add_device_handler), methods=['POST'])
+        self.app.add_url_rule('/devices', 'remove_device', EndpointAction(self.remove_device_handler), methods=['DELETE'])
+        self.app.add_url_rule('/jobs', 'add_job', EndpointAction(self.add_job_handler), methods=['POST'])
         
     def add_device_handler(self):
         data = request.json
